@@ -16,7 +16,7 @@ class StaticLayer(ImageLayer):
     def __init__(self, image, name="Static Layer 1"):
         ImageLayer.__init__(self, image, name)
     
-class MovingLayer(ImageLayer):
+class ScrollingLayer(ImageLayer):
     
     def __init__(self, image, name="Moving Layer 1", direction="L", padding=0):
         ImageLayer.__init__(self, image, name)
