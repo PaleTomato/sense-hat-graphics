@@ -5,6 +5,10 @@ import random
 bar_colour = [255,0,0]
 
 class SenseGraph(SenseHat):
+    """
+    Extension of the Sense Hat class, which adds additional functionality for
+    the plotting of graphs on the LED matrix
+    """
 
     def add_bar(self,value):
         """
