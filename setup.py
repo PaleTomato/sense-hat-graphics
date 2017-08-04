@@ -9,6 +9,6 @@ setup(name='sense-hat-graphics',
       license='GPL-3.0',
       packages=['sense_graphics'],
       install_requires=[
-          'sense_hat'
+          'sense_hat',
           'numpy'
       ])

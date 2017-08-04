@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 
 class Frame(object):
     """
@@ -14,10 +14,10 @@ class Frame(object):
     def __init__(self, image_rgb, image_alpha):
         
         # Check that inputs are numpy arrays
-        if type(image_rgb)   != numpy.array:
+        if type(image_rgb)   != np.ndarray:
             raise TypeError("Input image_rgb should be a numpy array")
         
-        if type(image_alpha) != numpy.array:
+        if type(image_alpha) != np.ndarray:
             raise TypeError("Input image_alpha should be a numpy array")
         
         # Check size of inputted arrays are correct
@@ -36,13 +36,18 @@ class Frame(object):
         if other.__class__ != Frame:
             raise TypeError
         
-        this_alpha = self.alpha
-        other_alpha = other.alpha * (1-self.alpha)
+        this_alpha  = self.alpha
+        other_alpha = (other.alpha * (255-self.alpha))//255
         
-        this_rgb = self.rgb * this_alpha
-        other_rgb = other.rgb * other_alpha
+        # Multiply rgb by alpha (by making alpha into 8x8x3)
+        this_rgb  = self.rgb  * np.repeat( this_alpha[:,:,np.newaxis],3,axis=2)
+        other_rgb = other.rgb * np.repeat(other_alpha[:,:,np.newaxis],3,axis=2)
         
-        return Frame(this_rgb + other_rgb, this_alpha + other_alpha)
+        new_rgb   = (this_rgb + other_rgb)//255
+        new_alpha = this_alpha + other_alpha
+        
+        return Frame(new_rgb, new_alpha)
+        
     
     def __radd__(self, other):
         if other == 0:
