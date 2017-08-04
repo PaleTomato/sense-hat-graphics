@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from sense_hat import SenseHat
 from .image_layer import StaticLayer, ScrollingLayer
+from .frame import Frame
 import time
 
 
@@ -11,31 +12,45 @@ class SenseImage(SenseHat):
         SenseHat.__init__(self)
         self.layers = []
     
-    def layer_static(self,image,update_display=True):
+    
+    def add_layer_static(self, image_rgb, alpha, name="Static Layer 1"):
         """
-        Adds a static image to the Sense Hat LED matrix. Multiple images can be
-        stacked on top of each other (empty and semi-transparent areas of the
-        image allow other images underneath to show through)
-        
-        If update_display is set to True, then the Sense Hat LED matrix will
-        display the new image as soon as this method is run. Set to False if you
-        wish to create a number of images in a stack, before displaying them
-        simultaneously.
+        Adds a static image to the Sense Hat LED matrix.
         """
         
         # Add the static image to the layer stack
-        new_layer = StaticLayer(image)
-        self.layers.append(new_layer)
+        self.layers.append(StaticLayer(image_rgb, alpha, name))
         
-        # If requested, update the display
-        if update_display:
-            self.show_image
             
-    def layer_scrolling(self, image, name="Moving Layer 1"):
+    def add_layer_scrolling(self, image_rgb, alpha, name="Moving Layer 1"):
+        """
+        Adds an image to the Sense Hat LED matrix that scrolls from left to
+        right.
+        """
+        
+        # Add the scrolling layer to the layer stack 
+        self.layers.append(ScrollingLayer(image_rgb, alpha, name))
+
+
+    def set_pixels(self, pixel_list):
+        
+        if type(pixel_list) == Frame:
+            pixel_list = pixel_list.to_list()
+        
+        SenseHat.set_pixels(self,pixel_list)
+        
     
-        self.layers.append(ScrollingLayer(image, name))
-
-
+    def show_image_static(self):
+        """
+        Displays the current layered image as a static image, which is the first
+        still in the animation
+        """
+        
+        frame = self.create_frames(1)
+        
+        self.set_pixels(frame[0])
+        
+        
     def show_image_dynamic(self, scroll_speed=0.5, total_time=10):
         """
         Displays the current layered image as an animated image
@@ -51,45 +66,24 @@ class SenseImage(SenseHat):
             time.sleep(scroll_speed)
             
             
-            
-    def show_image_static(self):
-        """
-        Displays the current layered image as a static image, which is the first
-        still in the animation
-        """
-        
-        frame = self.create_frames(1)
-        
-        self.set_pixels(frame[0])
-        
-        
     def create_frames(self, num_frames):
         """
         Creates the specified number of frames by looping through the layers as
         appropriate
         """
         
-        # Create an empty set of frames to begin with
-        empty_frame = [[0,0,0]] * 64
-        frames = [empty_frame] * num_frames
+        frames = []
         
-        # Loop through each layer
-        for layer in self.layers:
-            frame_num = 0
-            layer_idx = 0
+        for i in range(num_frames):
             
-            # Get the stills for this layer
-            layer_stills = layer.get_frames()
+            # Make a list of all the layered frames in this frame
+            this_layer_frames = []
+            for layer in self.layers:
+                this_layer_frames.append(layer.get_frame(i))
             
-            # Apply the each still of the layer to the appropriate frame
-            while frame_num < num_frames:
-                if layer_idx >= len(layer_stills):
-                    layer_idx = 0
-                
-                # Add on the next frame to the stack
-                # TODO Add transparency to this as it just replaces at present
-                frames[frame_num] = layer_stills[layer_idx]
-                frame_num += 1
-                layer_idx += 1
             
+            # Combine all the individual layered frames together
+            frames.append(sum(this_layer_frames))
+        
         return frames
+        

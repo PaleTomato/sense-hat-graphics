@@ -28,25 +28,31 @@ class Frame(object):
             raise ValueError("dimensions of image_alpha should be 8x8")
             
         
-        self.rgb = image_rgb
-        self.alpha = image_alpha
+        self.rgb   = image_rgb
+        
+        # Resize alpha into 8x8x3 (same size as rgb)
+        self.alpha = np.repeat( image_alpha[:,:,np.newaxis],3,axis=2)
         
     def __add__(self, other):
-        
+        """
+        Adding two frames will produce a new frame as an output with the two
+        images combined. The first image in the sum will be displayed in front
+        of the second
+        """
         if other.__class__ != Frame:
             raise TypeError
         
-        this_alpha  = self.alpha
+        
         other_alpha = (other.alpha * (255-self.alpha))//255
         
         # Multiply rgb by alpha (by making alpha into 8x8x3)
-        this_rgb  = self.rgb  * np.repeat( this_alpha[:,:,np.newaxis],3,axis=2)
-        other_rgb = other.rgb * np.repeat(other_alpha[:,:,np.newaxis],3,axis=2)
+        this_rgb  = self.rgb  * self.alpha
+        other_rgb = other.rgb * other_alpha
         
         new_rgb   = (this_rgb + other_rgb)//255
-        new_alpha = this_alpha + other_alpha
+        new_alpha = self.alpha + other_alpha
         
-        return Frame(new_rgb, new_alpha)
+        return Frame(new_rgb, new_alpha[:,:,1])
         
     
     def __radd__(self, other):
@@ -54,4 +60,22 @@ class Frame(object):
             return self
         else:
             return self.__add__(other)
+            
+    
+    def to_list(self,use_alpha=False):
+        """
+        Converts the Frame rgb values from a numpy array to a list containing
+        64 smaller lists of rgb values. This is useful for convering a frame
+        in order to plot on the Sense hat.
+        """
+        
+        if use_alpha:
+            values  = (self.rgb  * self.alpha)//255
+            
+        else:
+            values  = self.rgb
+            
+        values = values.reshape(64,3)
+        
+        return values.tolist()
             
