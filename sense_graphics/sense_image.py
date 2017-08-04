@@ -32,7 +32,7 @@ class SenseImage(SenseHat):
             self.show_image
             
     def layer_scrolling(self, image, name="Moving Layer 1"):
-	
+    
         self.layers.append(ScrollingLayer(image, name))
 
 
@@ -85,7 +85,9 @@ class SenseImage(SenseHat):
             while frame_num < num_frames:
                 if layer_idx >= len(layer_stills):
                     layer_idx = 0
-                    
+                
+                # Add on the next frame to the stack
+                # TODO Add transparency to this as it just replaces at present
                 frames[frame_num] = layer_stills[layer_idx]
                 frame_num += 1
                 layer_idx += 1

@@ -10,4 +10,5 @@ setup(name='sense-hat-graphics',
       packages=['sense_graphics'],
       install_requires=[
           'sense_hat'
+          'numpy'
       ])
