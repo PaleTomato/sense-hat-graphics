@@ -57,9 +57,18 @@ class ScrollingLayer(ImageLayer):
     """
     Layer that scrolls from left to right across the screen.
     """
-    def __init__(self, rgb, alpha, name="Moving Layer 1"):
+    def __init__(self, rgb, alpha, name="Moving Layer 1", padding=0):
         
         ImageLayer.__init__(self, rgb, alpha, name)
+        
+        if padding > 0:
+            rgb_pad = np.zeros((8, padding, 3), dtype=np.int8)
+            alpha_pad = np.zeros((8, padding),  dtype=np.int8)
+            
+            self.rgb   = np.concatenate((self.rgb,   rgb_pad  ), axis=1)
+            self.alpha = np.concatenate((self.alpha, alpha_pad), axis=1)
+        
+        
         
         
     def get_frame(self, frame_num=1):
@@ -70,5 +79,5 @@ class ScrollingLayer(ImageLayer):
         rgb   = np.roll(self.rgb,   frame_num, 1)
         alpha = np.roll(self.alpha, frame_num, 1)
         
-        return Frame(rgb, alpha)
+        return Frame(rgb[:,:8,:], alpha[:,:8])
         

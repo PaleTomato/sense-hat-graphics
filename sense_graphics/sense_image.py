@@ -22,14 +22,19 @@ class SenseImage(SenseHat):
         self.layers.append(StaticLayer(image_rgb, alpha, name))
         
             
-    def add_layer_scrolling(self, image_rgb, alpha, name="Moving Layer 1"):
+    def add_layer_scrolling(self, 
+                            image_rgb,
+                            alpha,
+                            name="Moving Layer 1",
+                            padding=0
+                            ):
         """
         Adds an image to the Sense Hat LED matrix that scrolls from left to
         right.
         """
         
         # Add the scrolling layer to the layer stack 
-        self.layers.append(ScrollingLayer(image_rgb, alpha, name))
+        self.layers.append(ScrollingLayer(image_rgb, alpha, name, padding))
 
 
     def set_pixels(self, pixel_list):
