@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from sense_hat import SenseHat
-from .image_layer import StaticLayer, ScrollingLayer
+from .image_layer import StaticLayer, ScrollingLayer, FlashingLayer
 from .frame import Frame
 import time
 
@@ -36,6 +36,23 @@ class SenseImage(SenseHat):
         # Add the scrolling layer to the layer stack 
         self.layers.append(ScrollingLayer(image_rgb, alpha, name, padding))
 
+    
+    def add_layer_flashing(self,
+                        image_rgb,
+                        alpha,
+                        name="Flashing Layer 1",
+                        flash_sequence=[255,0]
+                        ):
+         """
+         Adds an image to the Sense Hat LED matrix that flashes in the specified
+         flash squence. 255 indicates visible and 0 is not visible. Values in
+         between are allowed and will make for semi-transparent images
+         """
+         
+         self.layers.append(
+            FlashingLayer(image_rgb, alpha, name, flash_sequence)
+            )
+            
 
     def set_pixels(self, pixel_list):
         

@@ -81,3 +81,42 @@ class ScrollingLayer(ImageLayer):
         
         return Frame(rgb[:,:8,:], alpha[:,:8])
         
+
+
+class FlashingLayer(ImageLayer):
+    """
+    Layer that can flash on and off. The input flash_sequence should be a list
+    of values between 0 and 255. The flash sequence will display the full image
+    for frame i when flash_sequence[i] is equal to 255, and will display no
+    image when flash_sequence[i] equals 0. values in between 0 and 255 are also
+    allowed, and the image will be partially visible depending on the chosen
+    value. The sequence will be repeated if an index greater than
+    len(flash_sequence) is chosen.
+    """
+    
+    def __init__(self,
+                 rgb,
+                 alpha,
+                 name="Flashing Layer 1",
+                 flash_sequence=[255,0]
+                 ):
+                 
+        ImageLayer.__init__(self, rgb, alpha, name)
+        
+        self.flash_sequence = flash_sequence
+        
+    
+    def get_frame(self, frame_num=1):
+        """
+        Returns the frame frame_num of the layer. Frame 0 is the starting frame.
+        """
+        
+        # Get the intensity of the rgb image
+        flash_idx = frame_num % len(self.flash_sequence)
+        intensity = self.flash_sequence[flash_idx]     
+        
+        alpha = (self.alpha * intensity)//255
+        
+        return Frame(self.rgb, alpha)
+        
+        
