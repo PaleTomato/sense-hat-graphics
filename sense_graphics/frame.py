@@ -42,17 +42,23 @@ class Frame(object):
         if other.__class__ != Frame:
             raise TypeError
         
+        # Calculate the alpha for both frames
+        alpha1 = self.alpha
+        alpha2 = np.uint8( other.alpha * ((255 - self.alpha) / 255) )
+        alpha_total = alpha1 + alpha2
         
-        other_alpha = (other.alpha * (255-self.alpha))//255
+        # identify non-zero alpha values (to prevent division by zero later)
+        alpha_nz = alpha_total != 0
         
-        # Multiply rgb by alpha (by making alpha into 8x8x3)
-        this_rgb  = self.rgb  * self.alpha
-        other_rgb = other.rgb * other_alpha
+        # Calculate rgb of both frames
+        rgb_total = np.zeros((8, 8, 3), dtype=np.uint8)
+        rgb_total[alpha_nz] += (
+            self.rgb[alpha_nz]  * (alpha1[alpha_nz] / alpha_total[alpha_nz]) )
+        rgb_total[alpha_nz] += (
+            other.rgb[alpha_nz] * (alpha2[alpha_nz] / alpha_total[alpha_nz]) )
         
-        new_rgb   = (this_rgb + other_rgb)//255
-        new_alpha = self.alpha + other_alpha
         
-        return Frame(new_rgb, new_alpha[:,:,1])
+        return Frame(rgb_total, alpha_total[:,:,1])
         
     
     def __radd__(self, other):
@@ -62,7 +68,7 @@ class Frame(object):
             return self.__add__(other)
             
     
-    def to_list(self,use_alpha=False):
+    def to_list(self,use_alpha=True):
         """
         Converts the Frame rgb values from a numpy array to a list containing
         64 smaller lists of rgb values. This is useful for convering a frame
@@ -70,7 +76,7 @@ class Frame(object):
         """
         
         if use_alpha:
-            values  = (self.rgb  * self.alpha)//255
+            values  = np.uint8(self.rgb  * (self.alpha/255))
             
         else:
             values  = self.rgb

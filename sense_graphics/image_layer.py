@@ -6,8 +6,8 @@ class ImageLayer(object):
     def __init__(self, rgb, alpha, name="Layer 1"):
         
         # Convert rgb and alpha to numpy arrays
-        rgb   = np.array(rgb)
-        alpha = np.array(alpha)
+        rgb   = np.array(rgb, dtype = np.uint8)
+        alpha = np.array(alpha, dtype = np.uint8)
         
         # Reshape from 64x3 to 8x8x3
         self.rgb   = rgb.reshape(8,8,3)
@@ -62,8 +62,8 @@ class ScrollingLayer(ImageLayer):
         ImageLayer.__init__(self, rgb, alpha, name)
         
         if padding > 0:
-            rgb_pad = np.zeros((8, padding, 3), dtype=np.int8)
-            alpha_pad = np.zeros((8, padding),  dtype=np.int8)
+            rgb_pad = np.zeros((8, padding, 3), dtype=np.uint8)
+            alpha_pad = np.zeros((8, padding),  dtype=np.uint8)
             
             self.rgb   = np.concatenate((self.rgb,   rgb_pad  ), axis=1)
             self.alpha = np.concatenate((self.alpha, alpha_pad), axis=1)
@@ -115,7 +115,7 @@ class FlashingLayer(ImageLayer):
         flash_idx = frame_num % len(self.flash_sequence)
         intensity = self.flash_sequence[flash_idx]     
         
-        alpha = (self.alpha * intensity)//255
+        alpha = np.uint8( self.alpha * (intensity/255) )
         
         return Frame(self.rgb, alpha)
         
