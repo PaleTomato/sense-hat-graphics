@@ -71,7 +71,7 @@ class ScrollingLayer(ImageLayer):
         
         
         
-    def get_frame(self, frame_num=1):
+    def get_frame(self, frame_num):
         """
         Returns the frame frame_num of the layer. Frame 0 is the starting frame.
         """

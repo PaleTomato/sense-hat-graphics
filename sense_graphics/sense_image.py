@@ -62,15 +62,16 @@ class SenseImage(SenseHat):
         SenseHat.set_pixels(self,pixel_list)
         
     
-    def show_image_static(self):
+    def show_image_static(self, frame_num=0):
         """
-        Displays the current layered image as a static image, which is the first
-        still in the animation
+        Displays the current layered image as a static image. Input frame_num is
+        the index of the frame to show, which is the first
+        still in the animation by default (frame 0)
         """
         
-        frame = self.create_frames(1)
+        frame = self.create_frames(frame_num + 1)
         
-        self.set_pixels(frame[0])
+        self.set_pixels(frame[frame_num])
         
         
     def show_image_dynamic(self, scroll_speed=0.5, total_time=10):
