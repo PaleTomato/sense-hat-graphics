@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from sense_hat import SenseHat
-from .image_layer import StaticLayer, ScrollingLayer, FlashingLayer
+from .image_layer import ImageLayer, ScrollingLayer, FlashingLayer
 from .frame import Frame
 import time
 
@@ -19,7 +19,7 @@ class SenseImage(SenseHat):
         """
         
         # Add the static image to the layer stack
-        self.layers.append(StaticLayer(image_rgb, alpha, name))
+        self.layers.append(ImageLayer(image_rgb, alpha, name))
         
             
     def add_layer_scrolling(self, 
@@ -33,8 +33,11 @@ class SenseImage(SenseHat):
         right.
         """
         
-        # Add the scrolling layer to the layer stack 
-        self.layers.append(ScrollingLayer(image_rgb, alpha, name, padding))
+        # Add the scrolling layer to the layer stack
+        layer = ImageLayer(image_rgb, alpha, name)
+        layer = ScrollingLayer(layer, padding)
+        
+        self.layers.append(layer)
 
     
     def add_layer_flashing(self,
@@ -43,15 +46,17 @@ class SenseImage(SenseHat):
                         name="Flashing Layer 1",
                         flash_sequence=[255,0]
                         ):
-         """
-         Adds an image to the Sense Hat LED matrix that flashes in the specified
-         flash squence. 255 indicates visible and 0 is not visible. Values in
-         between are allowed and will make for semi-transparent images
-         """
+        """
+        Adds an image to the Sense Hat LED matrix that flashes in the specified
+        flash squence. 255 indicates visible and 0 is not visible. Values in
+        between are allowed and will make for semi-transparent images
+        """
          
-         self.layers.append(
-            FlashingLayer(image_rgb, alpha, name, flash_sequence)
-            )
+        layer = ImageLayer(image_rgb, alpha, name)
+        layer = FlashingLayer(layer, flash_sequence)
+        
+        self.layers.append(layer)
+
             
 
     def set_pixels(self, pixel_list):

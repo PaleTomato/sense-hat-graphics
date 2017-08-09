@@ -15,8 +15,9 @@ class ImageLayer(object):
         
         self.name   = name
         
-    
-    def get_frame(self, frame_num=1):
+        
+        
+    def get_frame(self, frame_num=0):
         """
         Returns the frame frame_num of the layer. For a static layer this will
         always be the same as the main image layer. Frame 0 is the starting
@@ -32,6 +33,7 @@ class ImageLayer(object):
         """
         return len(self.frames)
     
+    
     def __iter__(self):
         return self
 
@@ -44,30 +46,33 @@ class ImageLayer(object):
             return self.frames[self.current_frame]
 
 
-class StaticLayer(ImageLayer):
+
+class AnimatedLayer(ImageLayer):
     """
-    Static image layer that stays in the same place on the screen.
+    Class for an animated layer. All animated layers should be subclassed off
+    this class.
     """
-    def __init__(self, rgb, alpha, name="Static Layer 1"):
+    
+    def __init__(self, image_layer):
         
-        ImageLayer.__init__(self, rgb, alpha, name)
+        self.image_layer = image_layer
     
     
-class ScrollingLayer(ImageLayer):
+    def get_frame(self, frame_num=0):
+        
+        return image_layer.get_frame()
+        
+        
+
+class ScrollingLayer(AnimatedLayer):
     """
     Layer that scrolls from left to right across the screen.
     """
-    def __init__(self, rgb, alpha, name="Moving Layer 1", padding=0):
+    def __init__(self, image_layer, padding=0):
         
-        ImageLayer.__init__(self, rgb, alpha, name)
+        AnimatedLayer.__init__(self, image_layer)
         
-        if padding > 0:
-            rgb_pad = np.zeros((8, padding, 3), dtype=np.uint8)
-            alpha_pad = np.zeros((8, padding),  dtype=np.uint8)
-            
-            self.rgb   = np.concatenate((self.rgb,   rgb_pad  ), axis=1)
-            self.alpha = np.concatenate((self.alpha, alpha_pad), axis=1)
-        
+        self.padding = np.zeros((8, padding, 3), dtype=np.uint8)
         
         
         
@@ -76,14 +81,19 @@ class ScrollingLayer(ImageLayer):
         Returns the frame frame_num of the layer. Frame 0 is the starting frame.
         """
         
-        rgb   = np.roll(self.rgb,   frame_num, 1)
-        alpha = np.roll(self.alpha, frame_num, 1)
+        frame = self.image_layer.get_frame(frame_num)
         
-        return Frame(rgb[:,:8,:], alpha[:,:8])
+        rgb   = np.concatenate((frame.rgb,   self.padding), axis=1)
+        alpha = np.concatenate((frame.alpha, self.padding), axis=1)
+        
+        rgb   = np.roll(rgb,   frame_num, 1)
+        alpha = np.roll(alpha, frame_num, 1)
+        
+        return Frame(rgb[:,:8,:], alpha[:,:8,0])
         
 
 
-class FlashingLayer(ImageLayer):
+class FlashingLayer(AnimatedLayer):
     """
     Layer that can flash on and off. The input flash_sequence should be a list
     of values between 0 and 255. The flash sequence will display the full image
@@ -94,15 +104,10 @@ class FlashingLayer(ImageLayer):
     len(flash_sequence) is chosen.
     """
     
-    def __init__(self,
-                 rgb,
-                 alpha,
-                 name="Flashing Layer 1",
-                 flash_sequence=[255,0]
-                 ):
+    def __init__(self, image_layer, flash_sequence=[255,0]):
+                     
+        AnimatedLayer.__init__(self, image_layer)
                  
-        ImageLayer.__init__(self, rgb, alpha, name)
-        
         self.flash_sequence = flash_sequence
         
     
@@ -111,12 +116,14 @@ class FlashingLayer(ImageLayer):
         Returns the frame frame_num of the layer. Frame 0 is the starting frame.
         """
         
+        frame = self.image_layer.get_frame(frame_num)
+        
         # Get the intensity of the rgb image
         flash_idx = frame_num % len(self.flash_sequence)
         intensity = self.flash_sequence[flash_idx]     
         
-        alpha = np.uint8( self.alpha * (intensity/255) )
+        alpha = np.uint8( frame.alpha * (intensity/255) )
         
-        return Frame(self.rgb, alpha)
+        return Frame(frame.rgb, alpha[:,:,1])
         
         
