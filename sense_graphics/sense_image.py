@@ -39,7 +39,7 @@ class SenseImage(SenseHat):
         self.layers.append(ImageLayer(rgb, alpha, name))
         
             
-    def add_effect_scrolling(self, layer, padding=0):
+    def add_effect_scrolling(self, layer, direction = 'E', padding=0):
         """
         Adds a scrolling effect to the specified layer. Input layer can be
         either an integer layer index, or the name of the layer, i.e. a string.
@@ -55,7 +55,7 @@ class SenseImage(SenseHat):
             raise TypeError("Input 'layer' must be a string or integer")
         
         
-        self.layers[idx] = ScrollingLayer(self.layers[idx], padding)
+        self.layers[idx] = ScrollingLayer(self.layers[idx], direction, padding)
 
     
     def add_effect_flashing(self, layer, flash_sequence=[255,0]):

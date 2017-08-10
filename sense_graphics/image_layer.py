@@ -77,11 +77,24 @@ class ScrollingLayer(AnimatedLayer):
     """
     Layer that scrolls from left to right across the screen.
     """
-    def __init__(self, image_layer, padding=0):
+    def __init__(self, image_layer, direction='E', padding=0):
         
         AnimatedLayer.__init__(self, image_layer)
         
-        self.padding = np.zeros((8, padding, 3), dtype=np.uint8)
+        if direction in ('N','S'):
+            self.padding = np.zeros((8, padding, 3), dtype=np.uint8)
+            self.axis = 0
+            
+        elif direction in ('E','W'):
+            self.padding = np.zeros((padding, 8, 3), dtype=np.uint8)
+            self.axis = 1
+            
+        
+        if direction in ('S','E'):
+            self.shift_dir = 1
+            
+        elif direction in ('N','W'):
+            self.shift_dir = -1
         
         
         
@@ -92,13 +105,14 @@ class ScrollingLayer(AnimatedLayer):
         
         frame = self.image_layer.get_frame(frame_num)
         
-        rgb   = np.concatenate((frame.rgb,   self.padding), axis=1)
-        alpha = np.concatenate((frame.alpha, self.padding), axis=1)
+        rgb   = np.concatenate((frame.rgb,   self.padding), axis=self.axis)
+        alpha = np.concatenate((frame.alpha, self.padding), axis=self.axis)
         
-        rgb   = np.roll(rgb,   frame_num, 1)
-        alpha = np.roll(alpha, frame_num, 1)
+        shift = self.shift_dir * frame_num
+        rgb   = np.roll(rgb,   shift, self.axis)
+        alpha = np.roll(alpha, shift, self.axis)
         
-        return Frame(rgb[:,:8,:], alpha[:,:8,0])
+        return Frame(rgb[:8,:8,:], alpha[:8,:8,0])
         
 
 
