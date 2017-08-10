@@ -12,8 +12,8 @@ class ImageLayer(object):
         # Reshape from 64x3 to 8x8x3
         self.rgb   = rgb.reshape(8,8,3)
         self.alpha = alpha.reshape(8,8)
-        
-        self.name   = name
+
+        self.name  = name
         
         
         
@@ -25,6 +25,11 @@ class ImageLayer(object):
         """
         
         return Frame(self.rgb,self.alpha)
+        
+        
+    def get_name(self):
+        
+        return self.name
         
     
     def __len__(self):
@@ -60,8 +65,12 @@ class AnimatedLayer(ImageLayer):
     
     def get_frame(self, frame_num=0):
         
-        return image_layer.get_frame()
+        return self.image_layer.get_frame()
         
+        
+    def get_name(self):
+        
+        return self.image_layer.get_name()
         
 
 class ScrollingLayer(AnimatedLayer):

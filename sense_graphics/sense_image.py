@@ -13,52 +13,69 @@ class SenseImage(SenseHat):
         self.layers = []
     
     
-    def add_layer_static(self, image_rgb, alpha, name="Static Layer 1"):
+    def _get_layer_index(self, layer_name):
         """
-        Adds a static image to the Sense Hat LED matrix.
+        Get the index of the layer with name layer_name. Outputs the index of
+        the layer if a layer with that name exists already. If the layer does
+        not exist then False is outputted
         """
         
-        # Add the static image to the layer stack
-        self.layers.append(ImageLayer(image_rgb, alpha, name))
+        for idx in range(len(self.layers)):
+            if self.layers[idx].get_name() == layer_name:
+                return idx
+        
+        return False
+        
+    
+    def add_layer(self, rgb, alpha, name="New Layer"):
+        """
+        Adds a new image layer to the Sense Hat LED matrix.
+        """
+        
+        if self._get_layer_index(name):
+            raise ValueError("A layer with name '%s' already exists" % name)
+            
+        
+        self.layers.append(ImageLayer(rgb, alpha, name))
         
             
-    def add_layer_scrolling(self, 
-                            image_rgb,
-                            alpha,
-                            name="Moving Layer 1",
-                            padding=0
-                            ):
+    def add_effect_scrolling(self, layer, padding=0):
         """
-        Adds an image to the Sense Hat LED matrix that scrolls from left to
-        right.
+        Adds a scrolling effect to the specified layer. Input layer can be
+        either an integer layer index, or the name of the layer, i.e. a string.
         """
         
-        # Add the scrolling layer to the layer stack
-        layer = ImageLayer(image_rgb, alpha, name)
-        layer = ScrollingLayer(layer, padding)
+        if type(layer) == str:
+            idx = self._get_layer_index(layer)
         
-        self.layers.append(layer)
+        elif type(layer) == int:
+            idx = layer
+            
+        else:
+            raise TypeError("Input 'layer' must be a string or integer")
+        
+        
+        self.layers[idx] = ScrollingLayer(self.layers[idx], padding)
 
     
-    def add_layer_flashing(self,
-                        image_rgb,
-                        alpha,
-                        name="Flashing Layer 1",
-                        flash_sequence=[255,0]
-                        ):
+    def add_effect_flashing(self, layer, flash_sequence=[255,0]):
         """
-        Adds an image to the Sense Hat LED matrix that flashes in the specified
-        flash squence. 255 indicates visible and 0 is not visible. Values in
-        between are allowed and will make for semi-transparent images
+        Adds a flashing effect to the specified layer. 
         """
-         
-        layer = ImageLayer(image_rgb, alpha, name)
-        layer = FlashingLayer(layer, flash_sequence)
         
-        self.layers.append(layer)
+        if type(layer) == str:
+            idx = self._get_layer_index(layer)
+        
+        elif type(layer) == int:
+            idx = layer
+            
+        else:
+            raise TypeError("Input 'layer' must be a string or integer")
+            
+        
+        self.layers[idx] = FlashingLayer(self.layers[idx], flash_sequence)
 
             
-
     def set_pixels(self, pixel_list):
         
         if type(pixel_list) == Frame:
