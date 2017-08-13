@@ -3,6 +3,14 @@ import numpy as np
 from .frame import Frame
 
 class ImageLayer(object):
+    """
+    Base image layer class.
+    
+    The ImageLayer class is a base class which is used for creating a new layer
+    of imagery to display on the Sense Hat LED matrix. It contains the red,
+    green and blue (rgb) values as well as the alpha values.
+    """
+    
     def __init__(self, rgb, alpha, name="Layer 1"):
         
         # Convert rgb and alpha to numpy arrays
