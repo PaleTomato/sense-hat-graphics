@@ -6,15 +6,32 @@ bar_colour = [255,0,0]
 
 class SenseGraph(SenseHat):
     """
-    Extension of the Sense Hat class, which adds additional functionality for
-    the plotting of graphs on the LED matrix
+    Extension of the Sense Hat class, with basic plotting capability.
+    
+    The SenseGraph class is a subclass of the SenseHat class, and therefore
+    retains the SenseHat methods that enable it to take readings from the Sense
+    Hat's sensors, and display text and images on the LED matrix. The
+    SenseGraph builds on this functionality by having the ability to display
+    a simple bar graph on the LED matrix.
+    
+    Methods:
+    --------
+    add_bar   - Add an extra bar to the graph on the SenseHat.
     """
 
     def add_bar(self,value):
         """
-        Adds a new bar to the graph displayed on the Sense Hat LED display and
-        moves the other bars across. value should be a percentage, expressed as
-        a decimal.
+        Add a new bar to the graph displayed on the LED matrix.
+        
+        Update the graph shown on the Sense Hat LED matrix with a new bar on
+        the right-hand side. All existing bars will be shifted one place to the
+        left.
+        
+        Inputs:
+        -------
+        value - Value for the bar to display. This should be a percentage,
+                expressed as a decimal number between 0 and 1. The height of
+                the bar will reflect the inputted value.
         """
 
         empty = [0,0,0]
