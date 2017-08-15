@@ -20,6 +20,8 @@ class ImageLayer(object):
         # Reshape from 64x3 to 8x8x3
         self.rgb   = rgb.reshape(8,8,3)
         self.alpha = alpha.reshape(8,8)
+        
+        self.num_frames = 1
 
         self.name  = name
     
@@ -73,7 +75,7 @@ class ImageLayer(object):
         frames in this layer
         """
         
-        return 1
+        return self.num_frames
     
     
     def __iter__(self):
@@ -154,7 +156,9 @@ class ScrollingLayer(AnimatedLayer):
             
         elif direction in ('N','W'):
             self.shift_dir = -1
+            
         
+        self.num_frames = 8 + padding
         
         
     def get_pixels(self, frame_num=0):
@@ -199,6 +203,7 @@ class FlashingLayer(AnimatedLayer):
         AnimatedLayer.__init__(self, image_layer)
                  
         self.flash_sequence = flash_sequence
+        self.num_frames     = len(flash_sequence)
         
     
     def get_pixels(self, frame_num=0):
