@@ -175,9 +175,9 @@ class SenseImage(SenseHat):
                     to display. The default is 0 i.e. the first frame
         """
         
-        frame = self._create_frames(frame_num + 1)
+        frame = self._create_frame(frame_num)
         
-        self.set_pixels(frame[frame_num])
+        self.set_pixels(frame)
         
         
     def show_image_dynamic(self, scroll_speed=0.5, total_time=10):
@@ -196,36 +196,26 @@ class SenseImage(SenseHat):
         
         num_frames = int(total_time/scroll_speed)
         
-        frames = self._create_frames(num_frames)
-        
-        
-        for frame in frames:
+        for frame_num in range(num_frames):
             
+            frame = self._create_frame(frame_num)
             self.set_pixels(frame)
             time.sleep(scroll_speed)
             
             
-    def _create_frames(self, num_frames):
+    def _create_frame(self, frame_num):
         """
-        Creates the specified number of frames from the stored layers.
+        Creates the specified frame from the stored layers.
         
-        Return a list of Frame objects the length of the inputted number of
-        frames. The rgb values of the frames will vary depending on the
-        animations set for the different layers that make up each frame.
+        Return a Frame object for the specified frame number. The rgb values of
+        the frame will vary depending on the animations set for the different
+        layers that make up the frame.
         """
         
-        frames = []
+        this_layer_frames = []
+        for layer in self.layers:
+            this_layer_frames.append(layer[frame_num])
         
-        for i in range(num_frames):
-            
-            # Make a list of all the layered frames in this frame
-            this_layer_frames = []
-            for layer in self.layers:
-                this_layer_frames.append(layer[i])
-            
-            
-            # Combine all the individual layered frames together
-            frames.append(sum(this_layer_frames))
         
-        return frames
+        return sum(this_layer_frames)
         
