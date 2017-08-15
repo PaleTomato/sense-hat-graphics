@@ -76,19 +76,6 @@ class ImageLayer(object):
         """
         
         return self.num_frames
-    
-    
-    def __iter__(self):
-        return self
-
-
-    def __next__(self):
-        if self.current_frame >= len(self.frames):
-            raise StopIteration
-        else:
-            self.current_frame += 1
-            return self.frames[self.current_frame]
-
 
 
 class AnimatedLayer(ImageLayer):
