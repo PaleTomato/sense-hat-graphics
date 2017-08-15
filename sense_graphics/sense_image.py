@@ -221,7 +221,7 @@ class SenseImage(SenseHat):
             # Make a list of all the layered frames in this frame
             this_layer_frames = []
             for layer in self.layers:
-                this_layer_frames.append(layer.get_frame(i))
+                this_layer_frames.append(layer[i])
             
             
             # Combine all the individual layered frames together

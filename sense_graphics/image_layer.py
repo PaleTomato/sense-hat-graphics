@@ -22,17 +22,42 @@ class ImageLayer(object):
         self.alpha = alpha.reshape(8,8)
 
         self.name  = name
-        
-        
-        
-    def get_frame(self, frame_num=0):
+    
+    
+    def __getitem__(self, idx):
         """
-        Returns the frame frame_num of the layer. For a static layer this will
-        always be the same as the main image layer. Frame 0 is the starting
-        frame.
+        Return the frame at index idx.
+        
+        Overrides the built-in __getitem__ method to instead return the frame
+        at the inputted index. If idx is greater than the length defined by
+        len(self) then the frames will loop around and the appropriate frame
+        will be returned instead.
         """
         
-        return Frame(self.rgb,self.alpha)
+        # TODO make sure input is integer
+        
+        if idx >= len(self) or idx < 0:
+            frame_num = idx % len(self)
+        
+        else:
+            frame_num = idx
+        
+        rgb, alpha = self.get_pixels(frame_num)
+        
+        return Frame(rgb, alpha)
+    
+    
+    def __repr__(self):
+        
+        return self.__class__.__name__ + '("' + self.name + '")'
+    
+    
+    def get_pixels(self, frame_num=0):
+        """
+        Returns the rgb and alpha values for frame frame_num of the layer.
+        """
+        
+        return (self.rgb, self.alpha)
         
         
     def get_name(self):
@@ -42,9 +67,13 @@ class ImageLayer(object):
     
     def __len__(self):
         """
-        Returns number of frames for this image layer
+        Return the number of frames for this object.
+        
+        Overrides the built-in __len__method to instead return the number of
+        frames in this layer
         """
-        return len(self.frames)
+        
+        return 1
     
     
     def __iter__(self):
@@ -71,30 +100,52 @@ class AnimatedLayer(ImageLayer):
         self.image_layer = image_layer
     
     
-    def get_frame(self, frame_num=0):
+    def get_pixels(self, frame_num=0):
         
-        return self.image_layer.get_frame()
+        return self.image_layer.get_pixels()
         
         
     def get_name(self):
         
         return self.image_layer.get_name()
+    
+    
+    def __repr__(self):
+        
+        inner_brackets = self.image_layer.__repr__()
+        return self.__class__.__name__ + '(' + inner_brackets + ')'
         
 
 class ScrollingLayer(AnimatedLayer):
     """
     Layer that scrolls from left to right across the screen.
     """
+    
     def __init__(self, image_layer, direction='E', padding=0):
+        """
+        Initialise the ScrollingLayer with direction and padding.
+        
+        Inputs:
+        -------
+        image_layer   - The layer to apply the effect to. This can be either
+                        an ImageLayer object, or a subclass of it.
+        direction     - The direction in which to scroll. Use 'N', 'S', 'E' or
+                        'W' to scroll north (up) south (down) east (left) or
+                        west (right) respectively.
+        padding       - The number of blank pixels to append to the image when 
+                        scrolling. A padding of 8 would mean that your image
+                        will scroll entirely off the display before it
+                        reappears on the other side.
+        """
         
         AnimatedLayer.__init__(self, image_layer)
         
         if direction in ('N','S'):
-            self.padding = np.zeros((8, padding, 3), dtype=np.uint8)
+            self.padding = np.zeros((padding, 8, 3), dtype=np.uint8)
             self.axis = 0
             
         elif direction in ('E','W'):
-            self.padding = np.zeros((padding, 8, 3), dtype=np.uint8)
+            self.padding = np.zeros((8, padding, 3), dtype=np.uint8)
             self.axis = 1
             
         
@@ -106,55 +157,63 @@ class ScrollingLayer(AnimatedLayer):
         
         
         
-    def get_frame(self, frame_num):
+    def get_pixels(self, frame_num=0):
         """
-        Returns the frame frame_num of the layer. Frame 0 is the starting frame.
+        Returns the rgb and alpha values for frame frame_num of the layer.
         """
         
-        frame = self.image_layer.get_frame(frame_num)
+        rgb, alpha = self.image_layer.get_pixels(frame_num)
         
-        rgb   = np.concatenate((frame.rgb,   self.padding), axis=self.axis)
-        alpha = np.concatenate((frame.alpha, self.padding), axis=self.axis)
+        rgb   = np.concatenate((rgb,   self.padding), axis=self.axis)
+        alpha = np.concatenate((alpha, self.padding[:,:,1]), axis=self.axis)
         
         shift = self.shift_dir * frame_num
         rgb   = np.roll(rgb,   shift, self.axis)
         alpha = np.roll(alpha, shift, self.axis)
         
-        return Frame(rgb[:8,:8,:], alpha[:8,:8,0])
+        return (rgb[:8,:8,:], alpha[:8,:8])
         
 
 
 class FlashingLayer(AnimatedLayer):
     """
-    Layer that can flash on and off. The input flash_sequence should be a list
-    of values between 0 and 255. The flash sequence will display the full image
-    for frame i when flash_sequence[i] is equal to 255, and will display no
-    image when flash_sequence[i] equals 0. values in between 0 and 255 are also
-    allowed, and the image will be partially visible depending on the chosen
-    value. The sequence will be repeated if an index greater than
-    len(flash_sequence) is chosen.
+    Layer that can flash on and off in a specified sequence.
     """
     
     def __init__(self, image_layer, flash_sequence=[255,0]):
-                     
+        """
+        Initialise the ScrollingLayer with direction and padding.
+        
+        Inputs:
+        -------
+        image_layer   - The layer to apply the effect to. This can be either
+                        an ImageLayer object, or a subclass of it.
+        pattern       - List of integer values from 0 to 255. In a similar way
+                        to an image layer's alpha values, a value of 0 will
+                        make the image completely invisible, and a value of 255
+                        opaque. By setting values in between these extremes you
+                        can make an image fade. The pattern will repeat itself
+                        when using the show_image_ methods.
+        """
+        
         AnimatedLayer.__init__(self, image_layer)
                  
         self.flash_sequence = flash_sequence
         
     
-    def get_frame(self, frame_num=1):
+    def get_pixels(self, frame_num=0):
         """
-        Returns the frame frame_num of the layer. Frame 0 is the starting frame.
+        Returns the rgb and alpha values for frame frame_num of the layer.
         """
         
-        frame = self.image_layer.get_frame(frame_num)
+        rgb, alpha = self.image_layer.get_pixels(frame_num)
         
         # Get the intensity of the rgb image
         flash_idx = frame_num % len(self.flash_sequence)
         intensity = self.flash_sequence[flash_idx]     
         
-        alpha = np.uint8( frame.alpha * (intensity/255) )
+        alpha = np.uint8( alpha * (intensity/255) )
         
-        return Frame(frame.rgb, alpha[:,:,1])
+        return (rgb, alpha)
         
         
