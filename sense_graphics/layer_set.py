@@ -29,7 +29,7 @@ class LayerSet(object):
     
     def __repr__(self):
         
-        return self.__class__.__name__ + '(' + self.name + ')'
+        return self.__class__.__name__ + '("' + self.name + '")'
     
     
     def __getitem__(self, idx):
