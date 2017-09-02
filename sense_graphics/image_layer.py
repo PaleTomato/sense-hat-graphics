@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 import numpy as np
 from .frame import Frame
-from PIL.ImageQt import rgb
 
 class ImageLayer(object):
     """
