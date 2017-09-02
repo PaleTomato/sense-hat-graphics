@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 import numpy as np
 from .frame import Frame
+from PIL.ImageQt import rgb
 
 class ImageLayer(object):
     """
@@ -12,6 +13,19 @@ class ImageLayer(object):
     """
     
     def __init__(self, rgb, alpha, name="Layer 1"):
+        """
+        Initialise the Image Layer with rgb and alpha values, and a name.
+        
+        Inputs:
+        -------
+        rgb   - The red, green and blue values of the image, as a 64 element
+                list, each element of which contains a 3 element list of
+                integer rgb values from 0 to 255.
+        alpha - The alpha values of the second image, as a 64 element list of
+                values from 0 to 255.
+        name  - The name of this image layer, as a string.
+        """
+        
         
         # Convert rgb and alpha to numpy arrays
         rgb   = np.array(rgb, dtype = np.uint8)
@@ -171,7 +185,7 @@ class FlashingLayer(AnimatedLayer):
     Layer that can flash on and off in a specified sequence.
     """
     
-    def __init__(self, image_layer, flash_sequence=[255,0]):
+    def __init__(self, image_layer, pattern=[255,0]):
         """
         Initialise the ScrollingLayer with direction and padding.
         
@@ -183,14 +197,13 @@ class FlashingLayer(AnimatedLayer):
                         to an image layer's alpha values, a value of 0 will
                         make the image completely invisible, and a value of 255
                         opaque. By setting values in between these extremes you
-                        can make an image fade. The pattern will repeat itself
-                        when using the show_image_ methods.
+                        can make an image fade over a series of frames.
         """
         
         AnimatedLayer.__init__(self, image_layer)
                  
-        self.flash_sequence = flash_sequence
-        self.num_frames     = len(flash_sequence)
+        self.pattern = pattern
+        self.num_frames     = len(pattern)
         
     
     def get_pixels(self, frame_num=0):
@@ -201,11 +214,10 @@ class FlashingLayer(AnimatedLayer):
         rgb, alpha = self.image_layer.get_pixels(frame_num)
         
         # Get the intensity of the rgb image
-        flash_idx = frame_num % len(self.flash_sequence)
-        intensity = self.flash_sequence[flash_idx]     
+        flash_idx = frame_num % len(self.pattern)
+        intensity = self.pattern[flash_idx]     
         
         alpha = np.uint8( alpha * (intensity/255) )
         
         return (rgb, alpha)
-        
         
