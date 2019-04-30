@@ -1,32 +1,33 @@
-from sense_hat import SenseHat
-import time
 import random
+import time
 
-bar_colour = [255,0,0]
+from sense_hat import SenseHat
+
+BAR_COLOUR = [255, 0, 0]
 
 class SenseGraph(SenseHat):
     """
     Extension of the Sense Hat class, with basic plotting capability.
-    
+
     The SenseGraph class is a subclass of the SenseHat class, and therefore
     retains the SenseHat methods that enable it to take readings from the Sense
     Hat's sensors, and display text and images on the LED matrix. The
     SenseGraph builds on this functionality by having the ability to display
     a simple bar graph on the LED matrix.
-    
+
     Methods:
     --------
     add_bar   - Add an extra bar to the graph on the SenseHat.
     """
 
-    def add_bar(self,value):
+    def add_bar(self, value):
         """
         Add a new bar to the graph displayed on the LED matrix.
-        
+
         Update the graph shown on the Sense Hat LED matrix with a new bar on
         the right-hand side. All existing bars will be shifted one place to the
         left.
-        
+
         Inputs:
         -------
         value - Value for the bar to display. This should be a percentage,
@@ -34,7 +35,7 @@ class SenseGraph(SenseHat):
                 the bar will reflect the inputted value.
         """
 
-        empty = [0,0,0]
+        empty = [0, 0, 0]
 
         pixels = self.get_pixels()
 
@@ -44,23 +45,23 @@ class SenseGraph(SenseHat):
         # Work out what values to set each new pixel to
         column = []
         value *= 8
-        
+
         # Set the values used for each pixel of the bar
         while len(column) < 8:
             if value >= 1:
-                pixel = bar_colour
+                pixel = BAR_COLOUR
                 value -= 1
-                
+
             elif value > 0:
-                pixel = [round(channel * value) for channel in bar_colour]
+                pixel = [round(channel * value) for channel in BAR_COLOUR]
                 value = 0
-                
+
             else:
                 pixel = empty
 
-            column.insert(0,pixel)
+            column.insert(0, pixel)
 
-            
+
         # Replace the last column of the sense hat pixels with the new values
         new_pixel = 0
         for i in range(7, 64, 8):
